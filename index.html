@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>daziyouxi</title>
+</head>
+<style>
+	*{
+		margin: 0;
+		padding: 0;
+	}
+	html{
+		width: 100%;
+		height: 100%;
+	}
+	body{
+		width: 100%;
+		height: 100%;
+		background: url('img/929209ddd3290d3f8f236b98e7183ced.jpg') center/cover;
+	}
+	.box{
+		width: 150px;
+		height: auto;
+		background-color: #f6f6f6;
+		border: 2px solid #333;
+		overflow: hidden;
+	}
+	div{
+		font-size: 20px;
+		line-height: 40px;
+		color: #000;
+		text-align: center;
+	}
+	span{
+		font-size: 20px;
+		color: blue;
+		line-height: 40px;
+		text-align: center;
+	}
+	.kai{
+		width: 50px;
+		height: 20px;
+		float: left;
+	}
+	.jie{
+		width: 50px;
+		height: 20px;
+		float: right;
+	}
+</style>
+<body>
+	<div class="box">
+		<div>分数: <span class="shu">0</span></div>
+		<div>生命: <span class="sheng">30</span></div>
+		<button class="kai">开始</button>
+		<button class="jie">结束</button>
+	</div>
+</body>
+</html>
+<script src="function.js"></script>
+<script src="game.js"></script>
+<script>
+	class Code{
+		constructor(){
+			this.char = [['Q','img/Q.png'],['W','img/W.png'],['E','img/E.png'],['R','img/R.png'],['T','img/T.png'],['Y','img/Y.png'],['U','img/U.png'],['I','img/I.png'],['O','img/O.png'],['P','img/P.png'],['A','img/A.png'],['S','img/S.png'],['D','img/D.png'],['F','img/F.png']];
+			this.length = 6;
+			this.current = [];
+			// 下落速度
+			this.speed = 5;
+			this.box = document.querySelector('.shu');
+			this.score = 0;
+			this.guan = 30;
+			this.life = 30;
+			this.lifebox = document.querySelector('.sheng');
+			this.position = [];
+		}
+		start(){
+			this.getChars(this.length);
+			this.drop();
+			this.keys();
+		}
+		getChars(length){
+			for(let i=0;i<length;i++){
+				this.getChar();
+			}
+		}
+		checknum(char){
+			return this.current.some(element=>element.innerText == char);
+		}
+		checkpos(position){
+			return this.position.some(element=>Math.abs(element-position)<=50);
+		}
+
+		getChar(){
+			let divs = document.createElement('div');
+			let num = Math.floor(Math.random()*this.char.length);
+			do{
+				num = Math.floor(Math.random()*this.char.length);
+			}while(this.checknum(this.char[num][0]));
+			//距离顶端的距离tops，在100px范围内取整
+			let tops = Math.floor(Math.random()*100);
+			let left = Math.floor((window.innerWidth-400)*Math.random()+200);
+			do{
+				left = Math.floor((window.innerWidth-400)*Math.random()+200);
+			}while(this.checkpos(left));
+
+			divs.style.cssText = `width:60px;height:60px;
+			color:rgba(0,0,0,0);font-size:0px;text-align:center;line-height:60px;position:absolute;top:${tops}px;left:${left}px;background:url(${this.char[num][1]}) center/cover`
+			divs.innerText = this.char[num][0];
+			document.body.appendChild(divs);
+			this.current.push(divs);
+			this.position.push(left);
+		}
+		drop(){
+			let _this = this;
+			setInterval(function(){
+				for(let i=0;i<_this.current.length;i++){
+					let tops = _this.current[i].offsetTop + 10;
+					_this.current[i].style.top = tops + 'px';
+					if(tops >= 600){
+						document.body.removeChild(_this.current[i]);
+						_this.current.splice(i,1);
+						_this.position.splice(i,1);
+						_this.getChar();
+
+						_this.life--;
+						_this.lifebox.innerText = _this.life;
+						if(_this.life<0){
+							let flag = confirm('是否重新开始');
+							if(flag){
+								_this.restart();
+							}else{
+								close();
+							}
+						}
+					}
+				}
+			},100)
+		}
+		keys(){
+			let that = this;
+			document.onkeydown = function(e){
+				let code = e.key.toUpperCase();
+				for(let i=0;i<that.current.length;i++){
+					if(code == that.current[i].innerText){
+						document.body.removeChild(that.current[i]);
+						that.current.splice(i,1);
+						that.position.splice(i,1);
+						that.getChar();
+
+						that.box.innerText = ++ that.score;
+						if(that.score>=that.guan){
+							that.next();
+						}
+					}
+				}
+			}
+		}
+		next(){
+			clearInterval(this.t);
+			this.current.forEach(ele=>{
+				document.body.removeChild(ele);
+			})
+			this.current = [];
+			this.position = [];
+
+			this.length++;
+			this.guan += 30;
+
+			this.getChars(this.length);
+			this.drop();
+		}
+		restart(){
+			clearInterval(this.t);
+			this.current.forEach(ele=>{
+				document.body.removeChild(ele);
+			})
+			this.current = [];
+			this.position = [];
+			this.length = 6;
+
+			this.score = 0;
+			this.box.innerText = this.score;
+
+			this.life = 30;
+			this.lifebox.innerText = this.life;
+
+			this.getChars(this.length);
+			this.drop();
+		}
+	}
+
+</script>
